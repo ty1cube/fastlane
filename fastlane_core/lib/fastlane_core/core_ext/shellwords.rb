@@ -1,5 +1,7 @@
 require_relative '../helper'
 
+# Here be monkey patches
+
 class String
   # CrossplatformShellwords
   def shellescape
@@ -13,6 +15,14 @@ class Array
   end
 end
 
+# TODO: monkey patch Shellwords directly (Caution: Below you can't just call `Shellwords.escape` any more!)
+# https://stackoverflow.com/a/3833720/252627
+# https://stackoverflow.com/a/7895500/252627
+
+
+# Here be helper
+
+# handle switching between implementations
 module CrossplatformShellwords
   def shellescape(str)
     if FastlaneCore::Helper.windows?
@@ -29,6 +39,7 @@ module CrossplatformShellwords
   module_function :shelljoin
 end
 
+# Windows implementation
 module WindowsShellwords
   def shellescape(str)
     str = str.to_s
@@ -40,9 +51,8 @@ module WindowsShellwords
     str = str.dup
 
     # wrap in double quotes if contains space
-    # then return (and skip Shellwords.escape)
     if str =~ /\s/
-      # double quotes have to be doubled
+      # double quotes have to be doubled if will be quoted
       str.gsub!('"', '""')
       return '"' + str + '"'
     else
